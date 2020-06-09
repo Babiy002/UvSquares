@@ -44,7 +44,7 @@ def main(context, operator, square = False, snapToClosest = False):
         # context.scene.tool_settings.use_uv_select_sync = False
         return
 
-    startTime = time.clock()
+    startTime = time.process_time()
     obj = context.active_object
     me = obj.data
     bm = bmesh.from_edit_mesh(me)
@@ -60,15 +60,15 @@ def main(context, operator, square = False, snapToClosest = False):
 
     edgeVerts, filteredVerts, selFaces, nonQuadFaces, vertsDict, noEdge = ListsOfVerts(uv_layer, bm)   
     
-    if len(filteredVerts) is 0: return 
-    if len(filteredVerts) is 1: 
+    if len(filteredVerts) == 0: return 
+    if len(filteredVerts) == 1: 
         SnapCursorToClosestSelected(filteredVerts)
         return 
     
     cursorClosestTo = CursorClosestTo(filteredVerts)
     #line is selected
     
-    if len(selFaces) is 0:
+    if len(selFaces) == 0:
         if snapToClosest is True:
             SnapCursorToClosestSelected(filteredVerts)
             return
@@ -86,7 +86,7 @@ def main(context, operator, square = False, snapToClosest = False):
     #else:
     
     #active face checks
-    if targetFace is None or targetFace.select is False or len(targetFace.verts) is not 4:
+    if targetFace is None or targetFace.select is False or len(targetFace.verts) != 4:
         targetFace = selFaces[0]
     else:
         for l in targetFace.loops:
@@ -127,7 +127,7 @@ def ShapeFace(uv_layer, operator, targetFace, vertsDict, square):
         luv = l[uv_layer]
         corners.append(luv)
     
-    if len(corners) is not 4: 
+    if len(corners) != 4: 
         #operator.report({'ERROR'}, "bla")
         return
     
@@ -211,7 +211,7 @@ def MakeUvFaceEqualRectangle(vertsDict, lucv, rucv, rdcv, ldcv, startv, square =
 
 def SnapCursorToClosestSelected(filteredVerts):
     #TODO: snap to closest selected 
-    if len(filteredVerts) is 1: 
+    if len(filteredVerts) != 1: 
         SetAll2dCursorsTo(filteredVerts[0].uv.x, filteredVerts[0].uv.y)
     
     return
@@ -239,7 +239,7 @@ def ListsOfVerts(uv_layer, bm):
         
         allEdgeVerts.extend(facesEdgeVerts)
         if isFaceSel:            
-            if len(f.verts) is not 4:
+            if len(f.verts) != 4:
                 nonQuadFaces.append(f)
                 edgeVerts.extend(facesEdgeVerts)
             else: 
@@ -254,11 +254,11 @@ def ListsOfVerts(uv_layer, bm):
         else: edgeVerts.extend(facesEdgeVerts)
     
     noEdge = False
-    if len(edgeVerts) is 0:
+    if len(edgeVerts) == 0:
         noEdge = True
         edgeVerts.extend(allEdgeVerts)
     
-    if len(selFaces) is 0:
+    if len(selFaces) == 0:
         for ev in edgeVerts:
             if ListQuasiContainsVect(filteredVerts, ev) is False:
                 filteredVerts.append(ev)
@@ -446,7 +446,7 @@ def SuccessFinished(me, startTime):
     #use for backtrack of steps 
     #bpy.ops.ed.undo_push()
     bmesh.update_edit_mesh(me)
-    #elapsed = round(time.clock()-startTime, 2)
+    #elapsed = round(time.process_time()-startTime, 2)
     #if (elapsed >= 0.05): operator.report({'INFO'}, "UvSquares finished, elapsed:", elapsed, "s.")
     return
 
@@ -597,7 +597,7 @@ def ScaleTo0(axis):
     
     for area in bpy.context.screen.areas:
         if area.type == 'IMAGE_EDITOR':
-            if axis is 'Y':
+            if axis == 'Y':
                 bpy.ops.transform.resize(value=(1, 0, 1), constraint_axis=(False, True, False), constraint_orientation='GLOBAL', mirror=False, proportional='DISABLED', proportional_edit_falloff='SMOOTH', proportional_size=1)
             else:
                 bpy.ops.transform.resize(value=(0, 1, 1), constraint_axis=(True, False, False), constraint_orientation='GLOBAL', mirror=False, proportional='DISABLED', proportional_edit_falloff='SMOOTH', proportional_size=1)
@@ -648,7 +648,7 @@ def ImageRatio():
     for a in bpy.context.screen.areas:
         if a.type == 'IMAGE_EDITOR':
             img = a.spaces[0].image
-            if img is not None and img.size[0] is not 0:
+            if img is not None and img.size[0] != 0:
                 ratioX, ratioY = img.size[0], img.size[1]
             break
     return ratioX, ratioY
@@ -669,7 +669,7 @@ def CursorClosestTo(verts, allowedError = 0.025):
                     min = hyp
                     minV = v
     
-    if min is not 1000: return minV
+    if min != 1000: return minV
     return None
 
 def SetAll2dCursorsTo(x,y):
@@ -707,7 +707,7 @@ def AreVertsQuasiEqual(v1, v2, allowedError = 0.0009):
     return False
 
 def RipUvFaces(context, operator):
-    startTime = time.clock()
+    startTime = time.process_time()
     
     obj = context.active_object
     me = obj.data
@@ -729,7 +729,7 @@ def RipUvFaces(context, operator):
         if isFaceSel is True:
             selFaces.append(f)
     
-    if len(selFaces) is 0:
+    if len(selFaces) == 0:
         target = None
         for f in bm.faces:
             for l in f.loops:
@@ -757,7 +757,7 @@ def RipUvFaces(context, operator):
     return SuccessFinished(me, startTime)
 
 def JoinUvFaces(context, operator):
-    startTime = time.clock()
+    startTime = time.process_time()
     
     obj = context.active_object
     me = obj.data
@@ -793,7 +793,7 @@ def JoinUvFaces(context, operator):
                         minV = luv
                         minV.select = True
         
-            if min is not 1000:
+            if min != 1000:
                 for v in vertsDict[(key[0], key[1])]:
                     v = v.uv
                     v.x = minV.uv.x
@@ -946,7 +946,7 @@ def register():
     bpy.utils.register_class(JoinFaces)
     bpy.utils.register_class(SnapToAxis)
     bpy.utils.register_class(SnapToAxisWithEqual)
-	
+    
     #menu
     bpy.types.IMAGE_MT_uvs.append(menu_func_uv_squares)
     bpy.types.IMAGE_MT_uvs.append(menu_func_uv_squares_by_shape)
